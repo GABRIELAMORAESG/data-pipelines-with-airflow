@@ -5,7 +5,7 @@ from airflow.contrib.hooks.aws_hook import AwsHook
 
 class StageToRedshiftOperator(BaseOperator):
     ui_color = '#358140'
-
+    #template_fields = ("s3_key",)
     copy_sql = """
         COPY {}
         FROM '{}'
@@ -21,7 +21,7 @@ class StageToRedshiftOperator(BaseOperator):
                  aws_credentials_id="",
                  table="",
                  s3_bucket="",
-                 s3_key="",
+                 #s3_key="",
                  region="",
                  json_option="",
                  *args, **kwargs):
@@ -31,7 +31,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.aws_credentials_id = aws_credentials_id
         self.table = table
         self.s3_bucket = s3_bucket
-        self.s3_key = s3_key
+        #self.s3_key = s3_key
         self.region = region
         self.json_option = json_option
 
@@ -43,8 +43,17 @@ class StageToRedshiftOperator(BaseOperator):
         self.log.info("Clearing data from destination Redshift table")
         redshift.run("DELETE FROM {}".format(self.table))
         self.log.info("Copying data from S3 to Redshift")
-        
-        s3_path = "s3://{}/{}".format(self.s3_bucket, self.s3_key)
+
+        # Get the execution date from the context
+        execution_date = context['execution_date']
+
+        s3_path = "s3://{}/{}/{}/{}".format(
+            self.s3_bucket,
+            execution_date.year,
+            execution_date.month,
+            execution_date.strftime('%Y-%m-%d')
+        )
+        self.log.info("Using S3 Path: {}".format(s3_path))
 
         formatted_sql = StageToRedshiftOperator.copy_sql.format(
             self.table,

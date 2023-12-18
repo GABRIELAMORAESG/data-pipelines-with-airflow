@@ -12,7 +12,7 @@ default_args = {
     'owner': 'udacity',
     'depends_on_past': False,
     'start_date':  datetime.now(),
-    'retries': 3,
+    'retries': 1,
     'retry_delay': timedelta(minutes=1),
     'catchup': False,
     'email_on_retry': False
@@ -32,22 +32,14 @@ start_operator = DummyOperator(
     dag=dag
     )
 
-create_tables = PostgresOperator(
-    task_id='create_tables',
-    dag=dag,
-    postgres_conn_id="redshift",
-    sql='create_tables.sql',
-)
-
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     table="staging_events",
-    s3_bucket="gabi-udacity",
-    s3_key="log-data",
-    region="us-west-2",
+    s3_bucket="gabi-udacity/log-data",
+    region="us-east-1",
     json_option='auto'
 )
 
@@ -57,9 +49,8 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     table="stage_songs",
-    s3_bucket="gabi-udacity",
-    s3_key="songs-data",
-    region="us-west-2",
+    s3_bucket="gabi-udacity/song-data",
+    region="us-east-1",
     json_option='auto'
 )
 
