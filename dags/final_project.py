@@ -1,12 +1,13 @@
-from datetime import datetime, timedelta
-import pendulum
 import os
 from airflow import DAG
 from airflow.contrib.hooks.aws_hook import AwsHook
-from airflow.operators.postgres_operator import PostgresOperator
 from airflow.operators.dummy import DummyOperator
+from airflow.operators.postgres_operator import PostgresOperator
+from airflow.models import Variable
+from datetime import datetime, timedelta
 from operators import (StageToRedshiftOperator, LoadFactOperator,LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
+#import pendulum
 
 default_args = {
     'owner': 'udacity',
@@ -32,6 +33,13 @@ start_operator = DummyOperator(
     dag=dag
     )
 
+create_tables = PostgresOperator(
+    task_id='create_tables',
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql='create_tables.sql',
+)
+
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
@@ -39,7 +47,7 @@ stage_events_to_redshift = StageToRedshiftOperator(
     aws_credentials_id="aws_credentials",
     table="staging_events",
     s3_bucket="gabi-udacity",
-    s3_key = "log_data/{execution.year}/{execution.month}",
+    s3_key = "log_data/{{execution.year}}/{{execution.month}}",
     region="us-east-1",
     json_option='auto'
 )
@@ -49,7 +57,7 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     dag=dag,
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
-    table="stage_songs",
+    table="staging_songs",
     s3_bucket="gabi-udacity",
     s3_key = "song-data/{execution.year}/{execution.month}",
     region="us-east-1",
