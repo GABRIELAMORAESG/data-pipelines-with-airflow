@@ -23,7 +23,7 @@ class DataQualityOperator(BaseOperator):
         for table in self.tables:
             try:
                 self.log.info('Checking data quality for table: {}'.format(table))
-                records = redshift.redshift.get_records("SELECT COUNT(*) FROM {}".format(table))
+                records = redshift.get_records("SELECT COUNT(*) FROM {}".format(table))
                 num_records = records[0][0]
                 if len(records) < 1 or len(records[0]) <1 or records[0][0] == 0:
                     self.log.error("Data quality check failed: {} has no value".format(table))

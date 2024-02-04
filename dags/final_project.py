@@ -3,9 +3,8 @@ from airflow import DAG
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.operators.dummy import DummyOperator
 from datetime import datetime, timedelta
-from operators import (StageToRedshiftOperator, LoadFactOperator,LoadDimensionOperator, DataQualityOperator)
-                       #, CreateSchemaOperator)
-from helpers import (SqlQueries, SqlSchema)
+from operators import (StageToRedshiftOperator, LoadFactOperator,LoadDimensionOperator, DataQualityOperator)#, CreateSchemaOperator)
+from helpers import (SqlQueries)#, SqlSchema)
 #import pendulum
 
 default_args = {
@@ -31,14 +30,6 @@ start_operator = DummyOperator(
     task_id='Begin_execution',
     dag=dag
     )
-
-create_schema = CreateSchemaOperator(
-    task_id="Create_schema",
-    dag=dag,
-    redshift_conn_id="redshift",
-    sql=SqlSchema.create,
-    skip=False
-)
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
