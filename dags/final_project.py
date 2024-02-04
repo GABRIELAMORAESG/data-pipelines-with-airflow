@@ -11,7 +11,7 @@ from helpers import SqlQueries
 default_args = {
     'owner': 'udacity',
     'depends_on_past': False,
-    'start_date':  datetime.now(),
+    'start_date':datetime.now(),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
     'catchup': False,
@@ -38,7 +38,8 @@ stage_events_to_redshift = StageToRedshiftOperator(
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     table="staging_events",
-    s3_bucket="gabi-udacity/log-data",
+    s3_bucket="gabi-udacity",
+    s3_key = "log_data/{execution.year}/{execution.month}",
     region="us-east-1",
     json_option='auto'
 )
@@ -49,7 +50,8 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     table="stage_songs",
-    s3_bucket="gabi-udacity/song-data",
+    s3_bucket="gabi-udacity",
+    s3_key = "song-data/{execution.year}/{execution.month}",
     region="us-east-1",
     json_option='auto'
 )
